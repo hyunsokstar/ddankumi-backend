@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // 여러 주소를 포함하는 CORS 설정
-  const allowedOrigins = ['http://127.0.0.1:3000', 'http://127.0.0.1:3001'];
+  const allowedOrigins = ['http://127.0.0.1:3000', 'http://127.0.0.1:3001', 'https://dankkumi-hyunsok-ohs-projects.vercel.app'];
 
   app.enableCors({
     origin: allowedOrigins, // 여러 주소를 배열로 추가
