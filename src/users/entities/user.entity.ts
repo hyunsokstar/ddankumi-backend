@@ -15,22 +15,25 @@ export class UsersModel {
     @Column({ nullable: false, unique: true })
     email: string;
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, default: '1122' })
+    password: string;
+
+    @Column({ nullable: true })
     name: string;
 
-    @CreateDateColumn()
+    @Column({ type: 'enum', enum: UserType, nullable: true })
+    user_type: UserType;
+
+    @CreateDateColumn({ nullable: true })
     join_date: Date;
 
     @Column({ type: 'timestamp', nullable: true })
     last_login_date: Date;
 
-    @Column({ type: 'enum', enum: UserType, nullable: false })
-    user_type: UserType;
-
-    @Column({ type: 'int', default: 0 })
+    @Column({ type: 'int', nullable: true })
     current_enrollments: number;
 
-    @Column({ type: 'int', default: 0 })
+    @Column({ type: 'int', nullable: true })
     total_payments: number;
 
     @Column({ type: 'text', nullable: true })
@@ -39,9 +42,9 @@ export class UsersModel {
     @Column({ type: 'int', nullable: true })
     average_score: number;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ nullable: true })
     created_at: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ nullable: true })
     updated_at: Date;
 }

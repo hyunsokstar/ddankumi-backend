@@ -5,6 +5,8 @@ import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModel } from './users/entities/user.entity';
 import { RequestLoggerMiddleware } from './middleware/logger.middleware';
+import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -20,7 +22,12 @@ import { RequestLoggerMiddleware } from './middleware/logger.middleware';
       ],
       synchronize: true,
     }),
-    UsersModule],
+    JwtModule.register({
+      secret: 'your_jwt_secret',  // 실제 환경에서는 환경 변수 사용 권장
+      signOptions: { expiresIn: '1h' },
+    }),
+    UsersModule,
+    AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })
