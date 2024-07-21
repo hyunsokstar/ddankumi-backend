@@ -11,6 +11,15 @@ import { LoginUserDto } from './dto/login-user-dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('check-auth')
+  @ApiOperation({ summary: '로그인 상태 확인' })
+  @ApiResponse({ status: 200, description: '로그인 상태 확인 성공' })
+  @ApiResponse({ status: 401, description: '인증되지 않은 사용자' })
+  async checkAuth(@Req() req) {
+    return this.authService.checkAuth(req.user);
+  }
+
   @Post('signup')
   @ApiOperation({ summary: '회원 가입' })
   @ApiResponse({ status: 201, description: '회원 가입에 성공했습니다.' })

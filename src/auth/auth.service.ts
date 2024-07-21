@@ -14,6 +14,16 @@ export class AuthService {
     private jwtService: JwtService
   ) { }
 
+  async checkAuth(user: any) {
+    if (!user) {
+      throw new UnauthorizedException('인증되지 않은 사용자입니다.');
+    }
+
+    // 사용자 정보에서 필요한 부분만 선택하여 반환
+    const { id, email, name, role } = user;
+    return { id, email, name, role, isAuthenticated: true };
+  }
+
   async signup(signUpUserDto: SignUpUserDto): Promise<void> {
     const hashedPassword = await bcrypt.hash(signUpUserDto.password, 10);
     const newUser = this.usersRepository.create({
