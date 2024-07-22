@@ -47,7 +47,8 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(signUpUserDto.password, 10);
     const newUser = this.usersRepository.create({
       ...signUpUserDto,
-      email: signUpUserDto.email.trim(), // 이메일 주소의 앞뒤 공백 제거
+      email: signUpUserDto.email.trim(),
+      role: signUpUserDto.role,
       password: hashedPassword,
     });
     await this.usersRepository.save(newUser);

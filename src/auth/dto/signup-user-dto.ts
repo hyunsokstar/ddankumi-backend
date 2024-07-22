@@ -1,5 +1,6 @@
-// src\auth\dto\signup-user-dto.ts
-import { IsString, IsEmail } from 'class-validator';
+// src/auth/dto/signup-user-dto.ts
+import { IsString, IsEmail, IsEnum, IsOptional } from 'class-validator';
+import { UserType } from 'src/users/entities/user.entity';
 
 export class SignUpUserDto {
     @IsEmail()
@@ -10,4 +11,8 @@ export class SignUpUserDto {
 
     @IsString()
     password: string;
+
+    @IsEnum(UserType)
+    @IsOptional()
+    role?: UserType;
 }
