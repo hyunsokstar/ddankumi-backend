@@ -11,6 +11,15 @@ import { LoginUserDto } from './dto/login-user-dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
+  @Post('login')
+  @ApiOperation({ summary: '로그인' })
+  @ApiResponse({ status: 200, description: '로그인 성공' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  async login(@Body() loginUserDto: LoginUserDto) {
+    const user = await this.authService.validateUser(loginUserDto.email, loginUserDto.password);
+    return this.authService.login(user);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('check-auth')
   @ApiOperation({ summary: '로그인 상태 확인' })
@@ -26,15 +35,6 @@ export class AuthController {
   async signup(@Body() signUpUserDto: SignUpUserDto): Promise<{ message: string }> {
     await this.authService.signup(signUpUserDto);
     return { message: '회원 가입에 성공했습니다.' };
-  }
-
-  @Post('login')
-  @ApiOperation({ summary: '로그인' })
-  @ApiResponse({ status: 200, description: '로그인 성공' })
-  @ApiResponse({ status: 401, description: '인증 실패' })
-  async login(@Body() loginUserDto: LoginUserDto) {
-    const user = await this.authService.validateUser(loginUserDto.email, loginUserDto.password);
-    return this.authService.login(user);
   }
 
   @Post('refresh')

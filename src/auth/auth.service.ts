@@ -14,6 +14,22 @@ export class AuthService {
     private jwtService: JwtService
   ) { }
 
+  async login(user: any) {
+    if (!user) {
+      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다.');
+    }
+
+    const payload = { email: user.email, sub: user.id, name: user.name, role: user.role };
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      access_token: this.jwtService.sign(payload),
+      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
+    };
+  }
+
   async checkAuth(user: any) {
     if (!user) {
       throw new UnauthorizedException('인증되지 않은 사용자입니다.');
@@ -21,6 +37,9 @@ export class AuthService {
 
     // 사용자 정보에서 필요한 부분만 선택하여 반환
     const { id, email, name, role } = user;
+
+    console.log("user at checkAuth : ", user);
+
     return { id, email, name, role, isAuthenticated: true };
   }
 
@@ -49,20 +68,6 @@ export class AuthService {
       return result;
     }
     return null;
-  }
-
-  async login(user: any) {
-    // console.log("user : ", user);
-    if (!user) {
-      throw new UnauthorizedException('이메일 또는 비밀번호가 잘못되었습니다.');
-    }
-
-    const payload = { email: user.email, sub: user.id };
-
-    return {
-      access_token: this.jwtService.sign(payload),
-      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
-    };
   }
 
   async refreshToken(refresh_token: string) {

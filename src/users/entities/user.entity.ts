@@ -22,7 +22,7 @@ export class UsersModel {
     name: string;
 
     @Column({ type: 'enum', enum: UserType, nullable: true })
-    user_type: UserType;
+    role: UserType;
 
     @CreateDateColumn({ nullable: true })
     join_date: Date;
