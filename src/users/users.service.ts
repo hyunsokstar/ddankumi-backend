@@ -10,10 +10,57 @@ export class UsersService {
     private readonly usersRepository: Repository<UsersModel>,
   ) {}
 
-  async findUsersForTestDataGrid(): Promise<Partial<UsersModel>[]> {
-    return await this.usersRepository.find({
-      select: ['id', 'email', 'name', 'age', 'gender', 'hobby']
+  async findUsersForTestDataGrid(
+    page: number = 0,
+    size: number = 10,
+  ): Promise<{
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    content: Partial<UsersModel>[];
+    number: number;
+    sort: any[];
+    numberOfElements: number;
+    pageable: {
+      pageNumber: number;
+      pageSize: number;
+      sort: any[];
+      offset: number;
+      paged: boolean;
+      unpaged: boolean;
+    };
+    first: boolean;
+    last: boolean;
+    empty: boolean;
+  }> {
+    const [users, total] = await this.usersRepository.findAndCount({
+      select: ['id', 'email', 'name', 'age', 'gender', 'hobby'],
+      skip: page * size,
+      take: size,
     });
+
+    const totalPages = Math.ceil(total / size);
+
+    return {
+      totalPages,
+      totalElements: total,
+      size,
+      content: users,
+      number: page,
+      sort: [],
+      numberOfElements: users.length,
+      pageable: {
+        pageNumber: page,
+        pageSize: size,
+        sort: [],
+        offset: page * size,
+        paged: true,
+        unpaged: false,
+      },
+      first: page === 0,
+      last: page === totalPages - 1,
+      empty: users.length === 0,
+    };
   }
 
   async findAll(): Promise<UsersModel[]> {

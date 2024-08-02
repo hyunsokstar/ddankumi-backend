@@ -1,13 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UsersModel } from './entities/user.entity';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   @Get('test-data-grid')
-  async getUsersForTestDataGrid(): Promise<Partial<UsersModel>[]> {
-    return await this.usersService.findUsersForTestDataGrid();
+  async getUsersForTestDataGrid(
+    @Query('page') page: number = 0,
+    @Query('size') size: number = 3,
+  ) {
+    return await this.usersService.findUsersForTestDataGrid(page, size);
   }
 
   @Get()
