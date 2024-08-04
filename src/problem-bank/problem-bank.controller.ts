@@ -1,14 +1,40 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, ParseIntPipe } from '@nestjs/common';
 import { ProblemBankService } from './problem-bank.service';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
-
+import { CreateProblemDto } from './dto/create-problem-dto';
+import { CreateAnswerOptionDto } from './dto/create-answer-option.dto';
 
 @Controller('problem-bank')
 export class ProblemBankController {
   constructor(private readonly problemBankService: ProblemBankService) { }
 
+  @Post('problem/:problemId/option')
+  @HttpCode(HttpStatus.CREATED)
+  async createAnswerOption(
+    @Param('problemId', ParseIntPipe) problemId: number,
+    @Body() createAnswerOptionDto: CreateAnswerOptionDto
+  ) {
+    const result = await this.problemBankService.createAnswerOption(problemId, createAnswerOptionDto);
+    return result;
+  }
 
+
+  // 특정 id의 problem 삭제
+  @Delete('problem/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeProblem(@Param('id', ParseIntPipe) id: number) {
+    return this.problemBankService.removeProblem(id);
+  }
+
+  @Post('exam/:examId/problem')
+  @HttpCode(HttpStatus.CREATED)
+  createProblem(
+    @Param('examId', ParseIntPipe) examId: number,
+    @Body() createProblemDto: CreateProblemDto
+  ) {
+    return this.problemBankService.createProblem(examId, createProblemDto);
+  }
 
   // exam 추가
   @Post('exam')

@@ -1,11 +1,14 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersModel } from 'src/users/entities/user.entity';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Exam } from './entities/exam.entity';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { Problem } from './entities/problem.entity';
+import { CreateProblemDto } from './dto/create-problem-dto';
+import { CreateAnswerOptionDto } from './dto/create-answer-option.dto';
+import { AnswerOption } from './entities/answer-option.entity';
 
 @Injectable()
 export class ProblemBankService {
@@ -20,11 +23,77 @@ export class ProblemBankService {
     @InjectRepository(Problem)
     private readonly problemRepository: Repository<Problem>,
 
+    @InjectRepository(AnswerOption)
+    private readonly answerOptionRepository: Repository<AnswerOption>,
+
+    private dataSource: DataSource
   ) { }
+
+  async createAnswerOption(problemId: number, createAnswerOptionDto: CreateAnswerOptionDto) {
+    try {
+      const problem = await this.problemRepository.findOne({ where: { id: problemId } });
+      if (!problem) {
+        throw new NotFoundException(`Problem with ID ${problemId} not found`);
+      }
+
+      const option = this.answerOptionRepository.create({
+        ...createAnswerOptionDto,
+        problem,
+      });
+
+      const savedOption = await this.answerOptionRepository.save(option);
+
+      return {
+        success: true,
+        message: 'Answer option created successfully',
+        data: {
+          id: savedOption.id,
+          text: savedOption.text,
+          problemId: problem.id,
+        },
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to create answer option');
+    }
+  }
+
+  // @Delete('problem/:id')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // removeProblem(@Param('id', ParseIntPipe) id: number) {
+  //   return this.problemBankService.removeProblem(id);
+  // } 에 대한 서비스 함수 추가
+  async removeProblem(id: number) {
+    const problem = await this.problemRepository.findOne({ where: { id } });
+    if (!problem) {
+      throw new NotFoundException(`Problem with ID ${id} not found`);
+    }
+
+    await this.problemRepository.remove(problem);
+  }
+
+  async createProblem(examId: number, createProblemDto: CreateProblemDto) {
+    const exam = await this.examRepository.findOne({ where: { id: examId } });
+    if (!exam) {
+      throw new NotFoundException(`Exam with ID ${examId} not found`);
+    }
+
+    const problem = this.problemRepository.create({
+      ...createProblemDto,
+      exam,
+    });
+
+    return this.problemRepository.save(problem);
+  }
 
   // getAllExamList
   async getAllExamList() {
-    return await this.examRepository.find();
+    // return await this.examRepository.find();
+    // 각 시험의 문제들도 같이 가져오기
+    // return await this.examRepository.find({ relations: ['problems'] });
+    return await this.examRepository.find({ relations: ['problems', 'problems.options'] });
   }
 
   // exam 생성

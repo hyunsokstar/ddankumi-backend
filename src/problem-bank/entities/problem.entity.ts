@@ -1,7 +1,7 @@
 // problem.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { Exam } from './exam.entity';
-import { AnswerOption } from './answer-option.entity'; // Import the Option type
+import { AnswerOption } from './answer-option.entity';
 
 @Entity()
 export class Problem {
@@ -17,9 +17,9 @@ export class Problem {
     @ManyToOne(() => Exam, exam => exam.problems)
     exam: Exam;
 
-    @OneToMany(() => AnswerOption, option => option.problem)
-    options: AnswerOption[]; // Use Option as a type annotation
+    @OneToMany(() => AnswerOption, option => option.problem, { nullable: true })
+    options: AnswerOption[];
 
-    @Column()
+    @Column({ nullable: true })
     correctOptionId: number;
 }
