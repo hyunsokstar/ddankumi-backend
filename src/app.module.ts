@@ -7,6 +7,12 @@ import { UsersModel } from './users/entities/user.entity';
 import { RequestLoggerMiddleware } from './middleware/logger.middleware';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ProblemBankModule } from './problem-bank/problem-bank.module';
+import { Exam } from './problem-bank/entities/exam.entity';
+import { Problem } from './problem-bank/entities/problem.entity';
+import { Answer } from './problem-bank/entities/answer.entity';
+import { Result } from './problem-bank/entities/result.entity';
+import { AnswerOption } from './problem-bank/entities/answer-option.entity';
 
 @Module({
   imports: [
@@ -18,7 +24,12 @@ import { JwtModule } from '@nestjs/jwt';
       password: "postgres",
       database: "ddankumi_db",
       entities: [
-        UsersModel
+        UsersModel,
+        Exam,
+        Problem,
+        AnswerOption,
+        Answer,
+        Result
       ],
       synchronize: true,
     }),
@@ -27,7 +38,8 @@ import { JwtModule } from '@nestjs/jwt';
       signOptions: { expiresIn: '1h' },
     }),
     UsersModule,
-    AuthModule],
+    AuthModule,
+    ProblemBankModule],
   controllers: [AppController],
   providers: [AppService],
 })
