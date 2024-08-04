@@ -29,6 +29,51 @@ export class ProblemBankService {
     private dataSource: DataSource
   ) { }
 
+  // 특정 문제에 대해 옵션 5개 한번에 추가
+  // @Post('problem/:problemId/options')
+  // @HttpCode(HttpStatus.CREATED)
+  // async createAnswerOptions(
+  //   @Param('problemId', ParseIntPipe) problemId: number,
+  //   @Body() createAnswerOptionsDto: CreateAnswerOptionDto[]
+  // ) {
+  //   const result = await this.problemBankService.createAnswerOptions(problemId, createAnswerOptionsDto);
+  //   return result;
+  // } 에 대한 서비스 함수 추가
+  async createAnswerOptions(problemId: number, createAnswerOptionsDto: CreateAnswerOptionDto[]) {
+    try {
+      if (createAnswerOptionsDto.length > 5) {
+        throw new BadRequestException('Cannot create more than 5 answer options');
+      }
+
+      const problem = await this.problemRepository.findOne({ where: { id: problemId } });
+      if (!problem) {
+        throw new NotFoundException(`Problem with ID ${problemId} not found`);
+      }
+
+      const options = createAnswerOptionsDto.map(dto => this.answerOptionRepository.create({
+        ...dto,
+        problem,
+      }));
+
+      const savedOptions = await this.answerOptionRepository.save(options);
+
+      return {
+        success: true,
+        message: 'Answer options created successfully',
+        data: savedOptions.map(option => ({
+          id: option.id,
+          text: option.text,
+          problemId: problem.id,
+        })),
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to create answer options');
+    }
+  }
+
   async createAnswerOption(problemId: number, createAnswerOptionDto: CreateAnswerOptionDto) {
     try {
       const problem = await this.problemRepository.findOne({ where: { id: problemId } });

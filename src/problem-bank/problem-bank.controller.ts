@@ -9,6 +9,17 @@ import { CreateAnswerOptionDto } from './dto/create-answer-option.dto';
 export class ProblemBankController {
   constructor(private readonly problemBankService: ProblemBankService) { }
 
+  // 특정 문제에 대해 옵션 5개 한번에 추가
+  @Post('problem/:problemId/options')
+  @HttpCode(HttpStatus.CREATED)
+  async createAnswerOptions(
+    @Param('problemId', ParseIntPipe) problemId: number,
+    @Body() createAnswerOptionsDto: CreateAnswerOptionDto[]
+  ) {
+    const result = await this.problemBankService.createAnswerOptions(problemId, createAnswerOptionsDto);
+    return result;
+  }
+
   @Post('problem/:problemId/option')
   @HttpCode(HttpStatus.CREATED)
   async createAnswerOption(
@@ -18,7 +29,6 @@ export class ProblemBankController {
     const result = await this.problemBankService.createAnswerOption(problemId, createAnswerOptionDto);
     return result;
   }
-
 
   // 특정 id의 problem 삭제
   @Delete('problem/:id')
