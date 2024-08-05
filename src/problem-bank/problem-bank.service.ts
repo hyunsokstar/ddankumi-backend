@@ -39,6 +39,41 @@ export class ProblemBankService {
     await this.examRepository.remove(exam);
   }
 
+  // async createMultiProblem(examId: number, createProblemDto: CreateProblemDto[]) {
+  //   return this.dataSource.transaction(async transactionalEntityManager => {
+  //     const exam = await transactionalEntityManager.findOne(Exam, {
+  //       where: { id: examId },
+  //       relations: ['problems']
+  //     });
+
+  //     if (!exam) {
+  //       throw new NotFoundException(`Exam with ID ${examId} not found`);
+  //     }
+
+  //     const existingProblemCount = exam.problems.length;
+  //     const newProblemCount = createProblemDto.length;
+  //     const totalProblemCount = existingProblemCount + newProblemCount;
+
+  //     if (totalProblemCount > 20) {
+  //       throw new BadRequestException(`Total number of problems (${totalProblemCount}) exceeds the maximum limit of 20`);
+  //     }
+
+  //     const problems = createProblemDto.map(dto =>
+  //       transactionalEntityManager.create(Problem, {
+  //         ...dto,
+  //         exam,
+  //       })
+  //     );
+
+  //     try {
+  //       const savedProblems = await transactionalEntityManager.save(problems);
+  //       return savedProblems;
+  //     } catch (error) {
+  //       throw new InternalServerErrorException('Failed to create problems');
+  //     }
+  //   });
+  // }
+
   async createMultiProblem(examId: number, createProblemDto: CreateProblemDto[]) {
     return this.dataSource.transaction(async transactionalEntityManager => {
       const exam = await transactionalEntityManager.findOne(Exam, {
@@ -58,19 +93,29 @@ export class ProblemBankService {
         throw new BadRequestException(`Total number of problems (${totalProblemCount}) exceeds the maximum limit of 20`);
       }
 
-      const problems = createProblemDto.map(dto =>
-        transactionalEntityManager.create(Problem, {
-          ...dto,
+      const problems = await Promise.all(createProblemDto.map(async dto => {
+        const problem = transactionalEntityManager.create(Problem, {
+          question: dto.question,
+          image: dto.image,
+          correctOptionId: dto.correctOptionId,
           exam,
-        })
-      );
+        });
 
-      try {
-        const savedProblems = await transactionalEntityManager.save(problems);
-        return savedProblems;
-      } catch (error) {
-        throw new InternalServerErrorException('Failed to create problems');
-      }
+        const savedProblem = await transactionalEntityManager.save(problem);
+
+        const options = dto.options.map(optionDto =>
+          transactionalEntityManager.create(AnswerOption, {
+            text: optionDto.text,
+            problem: savedProblem,
+          })
+        );
+
+        await transactionalEntityManager.save(options);
+
+        return savedProblem;
+      }));
+
+      return problems;
     });
   }
 

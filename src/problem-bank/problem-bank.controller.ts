@@ -45,7 +45,6 @@ export class ProblemBankController {
     return this.problemBankService.getAllExamListOnly();
   }
 
-
   // 특정 문제에 대해 옵션 5개 한번에 추가
   @Post('problem/:problemId/options')
   @HttpCode(HttpStatus.CREATED)
