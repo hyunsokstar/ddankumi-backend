@@ -8,7 +8,7 @@ async function bootstrap() {
 
   // 여러 주소를 포함하는 CORS 설정
   const allowedOrigins = ['http://127.0.0.1:3000', 'http://localhost:3000', 'http://192.168.219.168:3000',
-    'http://52.79.208.201:3000', 'https://dankkumi-hyunsok-ohs-projects.vercel.app'];
+    'http://52.79.208.201:3000', 'http://15.164.149.51:3000'];
 
   app.enableCors({
     origin: allowedOrigins,
