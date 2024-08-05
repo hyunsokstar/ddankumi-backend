@@ -10,6 +10,6 @@ export class AnswerOption {
     @Column()
     text: string;
 
-    @ManyToOne(() => Problem, problem => problem.options)
+    @ManyToOne(() => Problem, problem => problem.options, { onDelete: 'CASCADE' })
     problem: Problem;
 }

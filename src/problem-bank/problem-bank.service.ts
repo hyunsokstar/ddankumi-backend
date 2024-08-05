@@ -29,6 +29,76 @@ export class ProblemBankService {
     private dataSource: DataSource
   ) { }
 
+
+  async removeExam(id: number) {
+    const exam = await this.examRepository.findOne({ where: { id } });
+    if (!exam) {
+      throw new NotFoundException(`Exam with ID ${id} not found`);
+    }
+
+    await this.examRepository.remove(exam);
+  }
+
+  async createMultiProblem(examId: number, createProblemDto: CreateProblemDto[]) {
+    return this.dataSource.transaction(async transactionalEntityManager => {
+      const exam = await transactionalEntityManager.findOne(Exam, {
+        where: { id: examId },
+        relations: ['problems']
+      });
+
+      if (!exam) {
+        throw new NotFoundException(`Exam with ID ${examId} not found`);
+      }
+
+      const existingProblemCount = exam.problems.length;
+      const newProblemCount = createProblemDto.length;
+      const totalProblemCount = existingProblemCount + newProblemCount;
+
+      if (totalProblemCount > 20) {
+        throw new BadRequestException(`Total number of problems (${totalProblemCount}) exceeds the maximum limit of 20`);
+      }
+
+      const problems = createProblemDto.map(dto =>
+        transactionalEntityManager.create(Problem, {
+          ...dto,
+          exam,
+        })
+      );
+
+      try {
+        const savedProblems = await transactionalEntityManager.save(problems);
+        return savedProblems;
+      } catch (error) {
+        throw new InternalServerErrorException('Failed to create problems');
+      }
+    });
+  }
+
+  async getAllProblemForExamId(examId: number) {
+    const exam = await this.examRepository.findOne({
+      where: { id: examId }, relations: ['examiner', 'problems']
+    });
+
+    if (!exam) {
+      throw new NotFoundException(`Exam with ID ${examId} not found`);
+    }
+
+    const examName = exam.name
+    const examiner = exam.examiner
+    const problems = await this.problemRepository.find({ where: { exam: { id: exam.id } }, relations: ['options'] });
+
+    console.log("problems.length for 3: ", problems.length);
+
+
+    return {
+      examName,
+      examiner,
+      problems
+    }
+
+    // return await this.problemRepository.find({ where: { exam }, relations: ['options'] });
+  }
+
   // 특정 문제에 대해 옵션 5개 한번에 추가
   // @Post('problem/:problemId/options')
   // @HttpCode(HttpStatus.CREATED)
@@ -138,12 +208,31 @@ export class ProblemBankService {
     // return await this.examRepository.find();
     // 각 시험의 문제들도 같이 가져오기
     // return await this.examRepository.find({ relations: ['problems'] });
-    return await this.examRepository.find({ relations: ['problems', 'problems.options'] });
+    return await this.examRepository.find({ relations: ['examiner', 'problems', 'problems.options'] });
+  }
+
+  // getAllExamListOnly
+  // exam list
+  // @Get('exam-only/')
+  // findAllExamOnly() {
+  //   return this.problemBankService.getAllExamListOnly();
+  // } 에 대한 서비스 함수 추가
+  async getAllExamListOnly() {
+    return await this.examRepository.find();
   }
 
   // exam 생성
   async createOneExam(createExamDto: CreateExamDto) {
-    const newExam = await this.examRepository.create(createExamDto);
+    if (!createExamDto.examinerId) {
+      throw new Error('ExaminerId is required');
+    }
+
+    const newExam = this.examRepository.create({
+      ...createExamDto,
+      examiner: { id: createExamDto.examinerId },
+      examinee: createExamDto.examineeId ? { id: createExamDto.examineeId } : null
+    });
+
     await this.examRepository.save(newExam);
     return newExam;
   }

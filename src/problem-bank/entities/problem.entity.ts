@@ -14,7 +14,7 @@ export class Problem {
     @Column({ nullable: true })
     image: string;
 
-    @ManyToOne(() => Exam, exam => exam.problems)
+    @ManyToOne(() => Exam, exam => exam.problems, { onDelete: 'CASCADE' })
     exam: Exam;
 
     @OneToMany(() => AnswerOption, option => option.problem, { nullable: true })

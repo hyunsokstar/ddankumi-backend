@@ -9,7 +9,8 @@ export class CreateExamDto {
     examinerId: number;
 
     @IsInt()
-    examineeId: number;
+    @IsOptional()
+    examineeId?: number;
 
     @IsArray()
     @IsOptional()
