@@ -2,7 +2,7 @@
 import { Controller, Post, Body, UseGuards, Get, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpUserDto } from './dto/signup-user-dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LoginUserDto } from './dto/login-user-dto';
 
@@ -10,6 +10,16 @@ import { LoginUserDto } from './dto/login-user-dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
+
+  @Post('signup')
+  @ApiOperation({ summary: '회원 가입' })
+  @ApiResponse({ status: 201, description: '회원 가입에 성공했습니다.' })
+  @ApiBody({ type: SignUpUserDto })
+  @ApiResponse({ status: 201, description: '회원 가입에 성공했습니다.' })
+  async signup(@Body() signUpUserDto: SignUpUserDto): Promise<{ message: string }> {
+    await this.authService.signup(signUpUserDto);
+    return { message: '회원 가입에 성공했습니다.' };
+  }
 
   @Post('login')
   @ApiOperation({ summary: '로그인' })
@@ -27,14 +37,6 @@ export class AuthController {
   @ApiResponse({ status: 401, description: '인증되지 않은 사용자' })
   async checkAuth(@Req() req) {
     return this.authService.checkAuth(req.user);
-  }
-
-  @Post('signup')
-  @ApiOperation({ summary: '회원 가입' })
-  @ApiResponse({ status: 201, description: '회원 가입에 성공했습니다.' })
-  async signup(@Body() signUpUserDto: SignUpUserDto): Promise<{ message: string }> {
-    await this.authService.signup(signUpUserDto);
-    return { message: '회원 가입에 성공했습니다.' };
   }
 
   @Post('refresh')
